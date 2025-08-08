@@ -19,9 +19,11 @@ export async function POST(request: Request) {
     .map((t) => t.trim())
     .filter(Boolean);
 
+  const isProd = process.env.NODE_ENV === 'production';
+
   const where = {
     menu: {
-      status: 'APPROVED' as const,
+      ...(isProd ? { status: 'APPROVED' as const } : {}),
       restaurant: city ? { city: { contains: city, mode: 'insensitive' as const } } : undefined,
     },
     ...(maxPrice != null ? { priceCents: { lte: maxPrice * 100 } } : {}),
@@ -46,9 +48,15 @@ export async function POST(request: Request) {
   // Sorting strategy
   let orderBy: any = { name: 'asc' as const };
   if (sortBy === 'price_asc') {
-    orderBy = [{ priceCents: 'asc' as const }, { name: 'asc' as const }];
+    orderBy = [
+      { priceCents: { sort: 'asc' as const, nulls: 'last' as const } },
+      { name: 'asc' as const },
+    ];
   } else if (sortBy === 'price_desc') {
-    orderBy = [{ priceCents: 'desc' as const }, { name: 'asc' as const }];
+    orderBy = [
+      { priceCents: { sort: 'desc' as const, nulls: 'last' as const } },
+      { name: 'asc' as const },
+    ];
   } else if (sortBy === 'name') {
     orderBy = { name: 'asc' as const };
   } else if (sortBy === 'relevance' && terms.length > 0) {
@@ -66,7 +74,6 @@ export async function POST(request: Request) {
 
   // Client-visible mapping
   const result = dishes
-    .filter((d) => d.priceCents != null || sortBy !== 'price_asc')
     .map((d) => ({
       id: d.id,
       name: d.name,

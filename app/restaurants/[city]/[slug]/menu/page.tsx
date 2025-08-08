@@ -11,14 +11,15 @@ import { getRestaurantBySlug } from '@/lib/api/restaurants';
 import { formatPrice, formatAddress, generateSEOTitle, generateSEODescription } from '@/lib/utils/slugify';
 
 interface PageProps {
-  params: {
+  params: Promise<{
     city: string;
     slug: string;
-  };
+  }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const restaurant = await getRestaurantBySlug(params.slug, params.city);
+  const { city, slug } = await params;
+  const restaurant = await getRestaurantBySlug(slug, city);
   
   if (!restaurant) {
     return {
@@ -39,7 +40,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function RestaurantMenuPage({ params }: PageProps) {
-  const restaurant = await getRestaurantBySlug(params.slug, params.city);
+  const { city, slug } = await params;
+  const restaurant = await getRestaurantBySlug(slug, city);
 
   if (!restaurant) {
     notFound();

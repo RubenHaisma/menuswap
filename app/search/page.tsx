@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -21,7 +21,7 @@ type SearchRestaurant = {
 };
 import type { DishWithRestaurant } from '@/lib/api/dishes';
 
-export default function SearchPage() {
+function SearchPageContent() {
   const searchParams = useSearchParams();
   const [filters, setFilters] = useState<SearchFiltersType>({
     query: searchParams.get('q') || '',
@@ -242,5 +242,18 @@ export default function SearchPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
+        <span className="ml-2 text-gray-600">Laden...</span>
+      </div>
+    }>
+      <SearchPageContent />
+    </Suspense>
   );
 }

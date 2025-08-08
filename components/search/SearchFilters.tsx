@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Filter, X } from 'lucide-react';
+import { Filter, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Badge } from '../ui/badge';
 
 interface SearchFiltersProps {
   onFiltersChange: (filters: SearchFilters) => void;
@@ -93,36 +94,61 @@ export default function SearchFilters({ onFiltersChange, initialFilters }: Searc
     onFiltersChange(cleared);
   };
 
+  const activeFiltersCount = [
+    filters.city !== 'all',
+    filters.maxPrice !== null,
+    filters.section !== 'all',
+    filters.tags.length > 0
+  ].filter(Boolean).length;
+
   return (
-    <Card className="w-full">
-      <CardHeader className="pb-3">
+    <Card className="card-base">
+      <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Filter className="h-5 w-5" />
+          <CardTitle className="text-lg flex items-center gap-2 text-gray-900">
+            <Filter className="h-5 w-5 text-primary" />
             Filters
+            {activeFiltersCount > 0 && (
+              <Badge className="bg-primary text-white text-xs px-2 py-1 rounded-full">
+                {activeFiltersCount}
+              </Badge>
+            )}
           </CardTitle>
           <div className="flex gap-2">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setIsExpanded(!isExpanded)}
+              className="text-gray-600 hover:text-primary"
             >
-              {isExpanded ? 'Inklappen' : 'Meer filters'}
+              {isExpanded ? (
+                <>
+                  <ChevronUp className="h-4 w-4 mr-1" />
+                  Minder
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="h-4 w-4 mr-1" />
+                  Meer
+                </>
+              )}
             </Button>
-            <Button variant="ghost" size="sm" onClick={clearFilters}>
-              <X className="h-4 w-4 mr-1" />
-              Wissen
-            </Button>
+            {activeFiltersCount > 0 && (
+              <Button variant="ghost" size="sm" onClick={clearFilters} className="text-gray-600 hover:text-red-600">
+                <X className="h-4 w-4 mr-1" />
+                Wissen
+              </Button>
+            )}
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6">
         {/* Basic Filters - Always Visible */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="space-y-4">
           <div>
-            <Label htmlFor="city">Stad</Label>
+            <Label htmlFor="city" className="text-sm font-medium text-gray-700 mb-2 block">Stad</Label>
             <Select value={filters.city} onValueChange={(value) => updateFilters({ city: value })}>
-              <SelectTrigger>
+              <SelectTrigger className="input-field">
                 <SelectValue placeholder="Selecteer stad" />
               </SelectTrigger>
               <SelectContent>
@@ -135,7 +161,7 @@ export default function SearchFilters({ onFiltersChange, initialFilters }: Searc
           </div>
 
           <div>
-            <Label htmlFor="maxPrice">Max. prijs</Label>
+            <Label htmlFor="maxPrice" className="text-sm font-medium text-gray-700 mb-2 block">Maximale prijs</Label>
             <Input
               id="maxPrice"
               type="number"
@@ -144,13 +170,14 @@ export default function SearchFilters({ onFiltersChange, initialFilters }: Searc
               onChange={(e) => updateFilters({ 
                 maxPrice: e.target.value ? parseInt(e.target.value) : null 
               })}
+              className="input-field"
             />
           </div>
 
           <div>
-            <Label htmlFor="sortBy">Sorteren op</Label>
+            <Label htmlFor="sortBy" className="text-sm font-medium text-gray-700 mb-2 block">Sorteren op</Label>
             <Select value={filters.sortBy} onValueChange={(value) => updateFilters({ sortBy: value })}>
-              <SelectTrigger>
+              <SelectTrigger className="input-field">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -165,11 +192,11 @@ export default function SearchFilters({ onFiltersChange, initialFilters }: Searc
 
         {/* Advanced Filters - Expandable */}
         {isExpanded && (
-          <div className="space-y-4 pt-4 border-t">
+          <div className="space-y-6 pt-6 border-t border-gray-200">
             <div>
-              <Label>Categorie</Label>
+              <Label className="text-sm font-medium text-gray-700 mb-2 block">Categorie</Label>
               <Select value={filters.section} onValueChange={(value) => updateFilters({ section: value })}>
-                <SelectTrigger>
+                <SelectTrigger className="input-field">
                   <SelectValue placeholder="Selecteer categorie" />
                 </SelectTrigger>
                 <SelectContent>
@@ -182,18 +209,19 @@ export default function SearchFilters({ onFiltersChange, initialFilters }: Searc
             </div>
 
             <div>
-              <Label>Dieetvoorkeuren</Label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+              <Label className="text-sm font-medium text-gray-700 mb-3 block">Dieetvoorkeuren</Label>
+              <div className="grid grid-cols-1 gap-3">
                 {DIET_TAGS.map(tag => (
-                  <div key={tag} className="flex items-center space-x-2">
+                  <div key={tag} className="flex items-center space-x-3">
                     <Checkbox
                       id={tag}
                       checked={filters.tags.includes(tag)}
                       onCheckedChange={() => toggleTag(tag)}
+                      className="border-gray-300"
                     />
                     <Label
                       htmlFor={tag}
-                      className="text-sm font-normal capitalize"
+                      className="text-sm text-gray-700 capitalize cursor-pointer"
                     >
                       {tag}
                     </Label>
@@ -205,52 +233,54 @@ export default function SearchFilters({ onFiltersChange, initialFilters }: Searc
         )}
 
         {/* Active Filters Display */}
-        {(filters.city !== 'all' || filters.maxPrice || filters.section !== 'all' || filters.tags.length > 0) && (
-          <div className="flex flex-wrap gap-2 pt-4 border-t">
-            {filters.city !== 'all' && (
-              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-800">
-                {filters.city}
-                <button
-                  onClick={() => updateFilters({ city: 'all' })}
-                  className="ml-1 hover:text-orange-600"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </span>
-            )}
-            {filters.maxPrice && (
-              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
-                Max €{filters.maxPrice}
-                <button
-                  onClick={() => updateFilters({ maxPrice: null })}
-                  className="ml-1 hover:text-green-600"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </span>
-            )}
-            {filters.section !== 'all' && (
-              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
-                {filters.section}
-                <button
-                  onClick={() => updateFilters({ section: 'all' })}
-                  className="ml-1 hover:text-blue-600"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </span>
-            )}
-            {filters.tags.map(tag => (
-              <span key={tag} className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-800">
-                {tag}
-                <button
-                  onClick={() => toggleTag(tag)}
-                  className="ml-1 hover:text-purple-600"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </span>
-            ))}
+        {activeFiltersCount > 0 && (
+          <div className="pt-6 border-t border-gray-200">
+            <div className="flex flex-wrap gap-2">
+              {filters.city !== 'all' && (
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs bg-primary/10 text-primary border border-primary/20">
+                  {filters.city}
+                  <button
+                    onClick={() => updateFilters({ city: 'all' })}
+                    className="ml-2 hover:text-primary-600"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              )}
+              {filters.maxPrice && (
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs bg-success/10 text-success border border-success/20">
+                  Max €{filters.maxPrice}
+                  <button
+                    onClick={() => updateFilters({ maxPrice: null })}
+                    className="ml-2 hover:text-success-600"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              )}
+              {filters.section !== 'all' && (
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs bg-primary/10 text-primary border border-primary/20">
+                  {filters.section}
+                  <button
+                    onClick={() => updateFilters({ section: 'all' })}
+                    className="ml-2 hover:text-primary-600"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              )}
+              {filters.tags.map(tag => (
+                <span key={tag} className="inline-flex items-center px-3 py-1 rounded-full text-xs bg-purple-100 text-purple-800 border border-purple-200">
+                  {tag}
+                  <button
+                    onClick={() => toggleTag(tag)}
+                    className="ml-2 hover:text-purple-600"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
           </div>
         )}
       </CardContent>

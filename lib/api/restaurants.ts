@@ -1,5 +1,5 @@
 import { prisma } from '../prisma';
-import type { Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 
 export type RestaurantUI = {
   id: string;
@@ -137,8 +137,8 @@ export async function createRestaurant(restaurant: {
       city: restaurant.city,
       address: restaurant.address ?? null,
       websiteUrl: restaurant.website_url ?? null,
-      lat: restaurant.lat == null ? null : new Prisma.Decimal(restaurant.lat),
-      lon: restaurant.lon == null ? null : new Prisma.Decimal(restaurant.lon),
+      lat: restaurant.lat == null ? undefined : new Prisma.Decimal(restaurant.lat),
+      lon: restaurant.lon == null ? undefined : new Prisma.Decimal(restaurant.lon),
       claimedBy: restaurant.claimed_by ?? null,
       verified: restaurant.verified ?? false,
     },

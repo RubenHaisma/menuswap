@@ -3,12 +3,12 @@ import { headers } from 'next/headers';
 export const SITEMAP_PAGE_SIZE = 49000; // safety margin under 50,000
 export const SITEMAP_REVALIDATE_SECONDS = 60 * 60; // 1 hour
 
-export function getBaseUrl(): string {
+export async function getBaseUrl(): Promise<string> {
   const envBase = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '');
   if (envBase) return envBase;
   // Fallback to request headers (may be undefined during build-time)
   try {
-    const hdrs = headers();
+    const hdrs = await headers();
     const host = hdrs.get('x-forwarded-host') || hdrs.get('host');
     const proto = hdrs.get('x-forwarded-proto') || 'https';
     if (host) return `${proto}://${host}`;

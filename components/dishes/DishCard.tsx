@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, Heart, Euro } from 'lucide-react';
+import { MapPin, Heart, Euro, Star } from 'lucide-react';
 import { formatPrice } from '@/lib/utils/slugify';
 
 interface DishCardProps {
@@ -35,21 +35,21 @@ export default function DishCard({
   const restaurantUrl = `/restaurant/${dish.restaurant.city.toLowerCase()}/${dish.restaurant.slug}/menu`;
 
   return (
-    <Card className={`group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 ${className}`}>
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex-1">
+    <Card className={`card-base group hover:-translate-y-1 transition-all duration-300 ${className}`}>
+      <CardContent className="p-6">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex-1 min-w-0">
             <Link 
               href={dishUrl}
-              className="block hover:text-orange-600 transition-colors"
+              className="block group-hover:text-primary transition-colors"
             >
-              <h3 className="font-semibold text-lg leading-tight group-hover:text-orange-600 transition-colors">
+              <h3 className="font-semibold text-lg text-gray-900 leading-tight mb-2 group-hover:text-primary transition-colors">
                 {dish.name}
               </h3>
             </Link>
             
             {dish.description && (
-              <p className="text-gray-600 text-sm mt-2 line-clamp-2">
+              <p className="text-gray-600 text-sm mb-3 line-clamp-2 leading-relaxed">
                 {dish.description}
               </p>
             )}
@@ -57,17 +57,19 @@ export default function DishCard({
             {showRestaurant && (
               <Link 
                 href={restaurantUrl}
-                className="text-gray-500 text-sm mt-2 flex items-center hover:text-orange-600 transition-colors"
+                className="text-gray-500 text-sm flex items-center hover:text-primary transition-colors group/restaurant"
               >
-                <MapPin className="h-3 w-3 mr-1" />
-                {dish.restaurant.name} • {dish.restaurant.city}
+                <MapPin className="h-3 w-3 mr-1 group-hover/restaurant:text-primary transition-colors" />
+                <span className="font-medium">{dish.restaurant.name}</span>
+                <span className="mx-1">•</span>
+                <span>{dish.restaurant.city}</span>
               </Link>
             )}
           </div>
 
           {dish.price_cents && (
-            <div className="text-right">
-              <div className="text-lg font-bold text-green-600 flex items-center">
+            <div className="ml-4 text-right">
+              <div className="text-xl font-bold text-primary flex items-center">
                 <Euro className="h-4 w-4" />
                 {formatPrice(dish.price_cents)}
               </div>
@@ -75,27 +77,27 @@ export default function DishCard({
           )}
         </div>
 
-        <div className="flex flex-wrap gap-2 mb-3">
-          <Badge variant="outline" className="text-xs">
+        <div className="flex flex-wrap gap-2 mb-4">
+          <Badge variant="outline" className="text-xs border-gray-200 text-gray-600">
             {dish.section}
           </Badge>
-          {dish.tags.slice(0, 3).map(tag => (
-            <Badge key={tag} variant="secondary" className="text-xs capitalize">
+          {dish.tags.slice(0, 2).map(tag => (
+            <Badge key={tag} variant="secondary" className="text-xs capitalize bg-primary/10 text-primary border-0">
               {tag}
             </Badge>
           ))}
-          {dish.tags.length > 3 && (
-            <Badge variant="secondary" className="text-xs">
-              +{dish.tags.length - 3} meer
+          {dish.tags.length > 2 && (
+            <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-600 border-0">
+              +{dish.tags.length - 2}
             </Badge>
           )}
         </div>
       </CardContent>
 
-      <CardFooter className="px-4 py-3 bg-gray-50 group-hover:bg-orange-50 transition-colors flex justify-between items-center">
+      <CardFooter className="px-6 py-4 bg-gray-50/50 group-hover:bg-primary/5 transition-colors flex justify-between items-center border-t border-gray-100">
         <Link 
           href={dishUrl}
-          className="text-orange-600 hover:text-orange-700 font-medium text-sm"
+          className="text-primary hover:text-primary-600 font-medium text-sm transition-colors"
         >
           Details bekijken →
         </Link>
@@ -103,7 +105,7 @@ export default function DishCard({
         <Button
           variant="ghost"
           size="sm"
-          className="p-2 h-8 w-8 text-gray-400 hover:text-red-500 hover:bg-red-50"
+          className="p-2 h-8 w-8 text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all"
         >
           <Heart className="h-4 w-4" />
         </Button>

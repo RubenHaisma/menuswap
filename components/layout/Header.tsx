@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, Menu, X, User, Heart, Settings } from 'lucide-react';
+import { Search, Menu, X, User, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { getCurrentUser, signOut } from '@/lib/auth';
@@ -11,9 +11,17 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState<any | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     getCurrentUser().then(setUser);
+    
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const handleSignOut = async () => {
@@ -29,169 +37,163 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-white shadow-sm border-b sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+    <header className={`sticky top-0 z-50 bg-white/95 backdrop-blur-sm transition-all duration-300 ${
+      isScrolled ? 'shadow-sm border-b border-gray-200' : ''
+    }`}>
+      <div className="container-content">
+        <div className={`flex justify-between items-center transition-all duration-300 ${
+          isScrolled ? 'h-16' : 'h-20'
+        }`}>
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">MS</span>
+          <Link href="/" className="flex items-center space-x-3 group">
+            <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-all duration-200">
+              <span className="text-white font-bold text-lg">M</span>
             </div>
-            <span className="text-xl font-bold text-gray-900">MenuSwap NL</span>
+            <span className="text-xl font-semibold text-gray-900 group-hover:text-primary transition-colors">MenuSwap</span>
           </Link>
 
-          {/* Desktop Search */}
-          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-lg mx-8">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                type="search"
-                placeholder="Zoek restaurant, gerecht, of stad..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 w-full"
-              />
-            </div>
-          </form>
-
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-4">
-            <Link href="/restaurants" className="text-gray-700 hover:text-orange-600 font-medium">
+          <nav className="hidden lg:flex items-center space-x-8">
+            <Link href="/restaurants" className="text-gray-700 hover:text-primary font-medium transition-colors relative group">
               Restaurants
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-200 group-hover:w-full"></span>
             </Link>
-            <Link href="/dishes" className="text-gray-700 hover:text-orange-600 font-medium">
+            <Link href="/dishes" className="text-gray-700 hover:text-primary font-medium transition-colors relative group">
               Gerechten
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-200 group-hover:w-full"></span>
             </Link>
-            <Link href="/cities" className="text-gray-700 hover:text-orange-600 font-medium">
+            <Link href="/cities" className="text-gray-700 hover:text-primary font-medium transition-colors relative group">
               Steden
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-200 group-hover:w-full"></span>
             </Link>
-            
+            <Link href="/how-it-works" className="text-gray-700 hover:text-primary font-medium transition-colors relative group">
+              Hoe het werkt
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-200 group-hover:w-full"></span>
+            </Link>
+          </nav>
+
+          {/* Desktop Search & CTA */}
+          <div className="hidden lg:flex items-center space-x-4">
             {user ? (
               <div className="flex items-center space-x-2">
-                <Link href="/favorites">
-                  <Button variant="ghost" size="sm">
-                    <Heart className="h-4 w-4" />
-                  </Button>
-                </Link>
                 <Link href="/dashboard">
-                  <Button variant="ghost" size="sm">
-                    <User className="h-4 w-4" />
+                  <Button variant="ghost" size="sm" className="btn-ghost h-10">
+                    <User className="h-4 w-4 mr-2" />
+                    Dashboard
                   </Button>
                 </Link>
-                <Button variant="ghost" size="sm" onClick={handleSignOut}>
+                <Button variant="ghost" size="sm" onClick={handleSignOut} className="btn-ghost h-10">
                   Uitloggen
                 </Button>
               </div>
             ) : (
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-3">
                 <Link href="/auth/login">
-                  <Button variant="ghost" size="sm">Inloggen</Button>
+                  <Button variant="ghost" className="btn-ghost h-10">
+                    Inloggen
+                  </Button>
                 </Link>
-                <Link href="/auth/register">
-                  <Button size="sm" className="bg-orange-600 hover:bg-orange-700">
-                    Registreren
+                <Link href="/menu/upload">
+                  <Button className="btn-primary h-10 shadow-sm hover:shadow-md">
+                    Menu toevoegen
                   </Button>
                 </Link>
               </div>
             )}
-          </nav>
+          </div>
 
           {/* Mobile menu button */}
           <Button
             variant="ghost"
             size="sm"
-            className="md:hidden"
+            className="lg:hidden btn-ghost h-10 w-10 p-0"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
-            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
-        </div>
-
-        {/* Mobile Search */}
-        <div className="md:hidden py-3 border-t">
-          <form onSubmit={handleSearch}>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                type="search"
-                placeholder="Zoek restaurant, gerecht, of stad..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 w-full"
-              />
-            </div>
-          </form>
         </div>
       </div>
 
       {/* Mobile Navigation */}
       {isMenuOpen && (
-        <div className="md:hidden bg-white border-t">
-          <div className="px-4 py-2 space-y-2">
-            <Link
-              href="/restaurants"
-              className="block py-2 text-gray-700 hover:text-orange-600 font-medium"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Restaurants
-            </Link>
-            <Link
-              href="/dishes"
-              className="block py-2 text-gray-700 hover:text-orange-600 font-medium"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Gerechten
-            </Link>
-            <Link
-              href="/cities"
-              className="block py-2 text-gray-700 hover:text-orange-600 font-medium"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Steden
-            </Link>
+        <div className="lg:hidden bg-white/95 backdrop-blur-sm border-t border-gray-200">
+          <div className="container-content py-6 space-y-6">
+            {/* Mobile Navigation Links */}
+            <div className="space-y-4">
+              <Link
+                href="/restaurants"
+                className="block text-gray-700 hover:text-primary font-medium transition-colors py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Restaurants
+              </Link>
+              <Link
+                href="/dishes"
+                className="block text-gray-700 hover:text-primary font-medium transition-colors py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Gerechten
+              </Link>
+              <Link
+                href="/cities"
+                className="block text-gray-700 hover:text-primary font-medium transition-colors py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Steden
+              </Link>
+              <Link
+                href="/how-it-works"
+                className="block text-gray-700 hover:text-primary font-medium transition-colors py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Hoe het werkt
+              </Link>
+            </div>
             
-            <div className="border-t pt-2">
+            {/* Mobile Auth */}
+            <div className="border-t border-gray-200 pt-6 space-y-3">
               {user ? (
                 <>
                   <Link
-                    href="/favorites"
-                    className="block py-2 text-gray-700 hover:text-orange-600 font-medium"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Favorieten
-                  </Link>
-                  <Link
                     href="/dashboard"
-                    className="block py-2 text-gray-700 hover:text-orange-600 font-medium"
+                    className="block w-full"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Dashboard
+                    <Button variant="outline" className="btn-secondary w-full">
+                      <User className="h-4 w-4 mr-2" />
+                      Dashboard
+                    </Button>
                   </Link>
-                  <button
+                  <Button
                     onClick={() => {
                       handleSignOut();
                       setIsMenuOpen(false);
                     }}
-                    className="block py-2 text-gray-700 hover:text-orange-600 font-medium w-full text-left"
+                    variant="ghost"
+                    className="btn-ghost w-full"
                   >
                     Uitloggen
-                  </button>
+                  </Button>
                 </>
               ) : (
                 <>
                   <Link
                     href="/auth/login"
-                    className="block py-2 text-gray-700 hover:text-orange-600 font-medium"
+                    className="block w-full"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Inloggen
+                    <Button variant="outline" className="btn-secondary w-full">
+                      Inloggen
+                    </Button>
                   </Link>
                   <Link
-                    href="/auth/register"
-                    className="block py-2 text-orange-600 hover:text-orange-700 font-medium"
+                    href="/menu/upload"
+                    className="block w-full"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Registreren
+                    <Button className="btn-primary w-full">
+                      Menu toevoegen
+                    </Button>
                   </Link>
                 </>
               )}

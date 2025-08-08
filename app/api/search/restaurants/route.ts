@@ -5,9 +5,11 @@ export async function POST(request: Request) {
   const body = await request.json();
   const { query, city, limit } = body as { query?: string; city?: string; limit?: number };
 
+  const isProd = process.env.NODE_ENV === 'production';
+
   const restaurants = await prisma.restaurant.findMany({
     where: {
-      verified: true,
+      ...(isProd ? { verified: true } : {}),
       ...(query ? { name: { contains: query, mode: 'insensitive' } } : {}),
       ...(city ? { city: { contains: city, mode: 'insensitive' } } : {}),
     },

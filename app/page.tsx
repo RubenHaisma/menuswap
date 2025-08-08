@@ -77,9 +77,9 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen flex flex-col bg-white">
       <Header />
-
+      <main className="flex-1">
       {/* Focused Hero */}
       <section className="relative overflow-hidden">
         {/* Soft animated background blobs */}
@@ -217,6 +217,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      </main>
 
       <Footer />
     </div>

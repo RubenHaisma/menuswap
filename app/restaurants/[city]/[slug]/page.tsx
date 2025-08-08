@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { MapPin, ExternalLink, Clock, Star, ArrowRight, Euro } from 'lucide-react';
+import { MapPin, ExternalLink, Clock, Star, ArrowRight, Euro, Search } from 'lucide-react';
 import { getRestaurantBySlug } from '@/lib/api/restaurants';
 import { formatPrice, formatAddress, generateSEOTitle, generateSEODescription } from '@/lib/utils/slugify';
 
@@ -213,12 +213,20 @@ export default async function RestaurantLandingPage({ params }: PageProps) {
                     </Button>
                   </a>
                 )}
-                <Link href={menuUrl}>
-                  <Button className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700">
-                    Bekijk menu
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </Link>
+                <div className="flex gap-2">
+                  <Link href={menuUrl}>
+                    <Button className="flex items-center gap-2 bg-primary hover:bg-primary-600">
+                      Bekijk menu
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                  <Link href={`/search?city=${encodeURIComponent(restaurant.city)}`}>
+                    <Button variant="outline" className="flex items-center gap-2">
+                      <Search className="h-4 w-4" />
+                      Zoek meer
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </div>
           </section>

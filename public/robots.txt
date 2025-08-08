@@ -1,0 +1,21 @@
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://menuswap.nl/sitemap.xml
+
+# Block admin areas (if any in future)
+Disallow: /admin/
+Disallow: /api/
+Disallow: /_next/
+Disallow: /temp/
+
+# Allow all search engines to crawl the main content
+Allow: /
+Allow: /restaurants/
+Allow: /search
+Allow: /steden
+Allow: /dish/
+
+# Crawl delay (be nice to servers)
+Crawl-delay: 1

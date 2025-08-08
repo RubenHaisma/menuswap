@@ -103,6 +103,16 @@ function SearchPageContent() {
   const handleFiltersChange = (newFilters: SearchFiltersType) => {
     setFilters(newFilters);
     performSearch(newFilters);
+    // Sync URL query for shareability
+    const params = new URLSearchParams();
+    if (newFilters.query) params.set('q', newFilters.query);
+    if (newFilters.city && newFilters.city !== 'all') params.set('city', newFilters.city);
+    if (newFilters.maxPrice != null) params.set('maxPrice', String(newFilters.maxPrice));
+    if (newFilters.section && newFilters.section !== 'all') params.set('section', newFilters.section);
+    if (newFilters.tags.length > 0) params.set('tags', newFilters.tags.join(','));
+    if (newFilters.sortBy) params.set('sortBy', newFilters.sortBy);
+    const url = `/search?${params.toString()}`;
+    if (typeof window !== 'undefined') window.history.replaceState(null, '', url);
   };
 
   const totalResults = restaurants.length + dishes.length;

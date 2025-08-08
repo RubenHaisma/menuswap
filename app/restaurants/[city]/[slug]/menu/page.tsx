@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { MapPin, ExternalLink, Clock, Upload, Star, Euro } from 'lucide-react';
+import { MapPin, ExternalLink, Clock, Star, Euro, ChefHat } from 'lucide-react';
 import { getRestaurantBySlug } from '@/lib/api/restaurants';
 import { formatPrice, formatAddress, generateSEOTitle, generateSEODescription } from '@/lib/utils/slugify';
 
@@ -107,10 +107,14 @@ export default async function RestaurantMenuPage({ params }: PageProps) {
                 </a>
               )}
               
-              <Button className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700">
-                <Upload className="h-4 w-4" />
-                Menu bijwerken
-              </Button>
+              <a
+                href={`/search?q=&city=${encodeURIComponent(restaurant.city)}`}
+              >
+                <Button className="flex items-center gap-2 bg-primary hover:bg-primary-600">
+                  <ChefHat className="h-4 w-4" />
+                  Meer restaurants
+                </Button>
+              </a>
             </div>
           </div>
         </div>
@@ -119,17 +123,20 @@ export default async function RestaurantMenuPage({ params }: PageProps) {
         {restaurant.dishes.length === 0 ? (
           <Card className="text-center p-12">
             <CardContent>
-              <Upload className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+              <ChefHat className="h-16 w-16 text-gray-300 mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-gray-900 mb-2">
                 Geen menu beschikbaar
               </h2>
               <p className="text-gray-600 mb-6">
-                Het menu van dit restaurant is nog niet toegevoegd. 
-                Help ons door het menu toe te voegen!
+                Het menu van dit restaurant is nog niet beschikbaar in onze database.
+                Probeer later opnieuw of zoek naar vergelijkbare restaurants.
               </p>
-              <Button className="bg-orange-600 hover:bg-orange-700">
-                Menu uploaden
-              </Button>
+              <a href={`/search?city=${encodeURIComponent(restaurant.city)}`}>
+                <Button className="bg-primary hover:bg-primary-600">
+                  <ChefHat className="h-4 w-4 mr-2" />
+                  Zoek andere restaurants
+                </Button>
+              </a>
             </CardContent>
           </Card>
         ) : (
@@ -234,7 +241,7 @@ export default async function RestaurantMenuPage({ params }: PageProps) {
                     <span>Laatste update: vandaag</span>
                   </div>
                   <div className="flex items-center">
-                    <Upload className="h-4 w-4 mr-2 text-gray-400" />
+                    <ChefHat className="h-4 w-4 mr-2 text-gray-400" />
                     <span>{restaurant.dishes.length} gerechten beschikbaar</span>
                   </div>
                 </div>

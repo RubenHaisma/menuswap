@@ -11,19 +11,19 @@
     --card-foreground: 220 13% 9%;
     --popover: 0 0% 100%;
     --popover-foreground: 220 13% 9%;
-    --primary: 221 100% 50%;
+    --primary: 184 48% 53%;
     --primary-foreground: 0 0% 98%;
     --secondary: 220 13% 95%;
     --secondary-foreground: 220 13% 9%;
     --muted: 220 13% 95%;
     --muted-foreground: 220 9% 46%;
-    --accent: 220 13% 95%;
-    --accent-foreground: 220 13% 9%;
+    --accent: 184 48% 53%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 221 100% 50%;
+    --ring: 184 48% 53%;
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
     --chart-3: 197 37% 24%;
@@ -121,7 +121,7 @@
   }
   
   .gradient-primary {
-    background: linear-gradient(135deg, #0066FF 0%, #0052CC 100%);
+    background: linear-gradient(135deg, #4EB9C0 0%, #3E949A 100%);
   }
 }
 

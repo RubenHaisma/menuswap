@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, Heart, Euro, Star } from 'lucide-react';
+import { MapPin, Euro, Star, ArrowRight } from 'lucide-react';
 import { formatPrice } from '@/lib/utils/slugify';
 
 interface DishCardProps {
@@ -31,8 +31,8 @@ export default function DishCard({
   showRestaurant = true,
   className = '' 
 }: DishCardProps) {
-  const dishUrl = `/dish/${dish.restaurant.city.toLowerCase()}/${dish.slug}`;
-  const restaurantUrl = `/restaurant/${dish.restaurant.city.toLowerCase()}/${dish.restaurant.slug}/menu`;
+  const dishUrl = `/dish/${encodeURIComponent(dish.restaurant.city)}/${encodeURIComponent(dish.slug)}`;
+  const restaurantUrl = `/restaurants/${encodeURIComponent(dish.restaurant.city)}/${encodeURIComponent(dish.restaurant.slug)}/menu`;
 
   return (
     <Card className={`card-base group hover:-translate-y-1 transition-all duration-300 ${className}`}>
@@ -102,13 +102,12 @@ export default function DishCard({
           Details bekijken →
         </Link>
         
-        <Button
-          variant="ghost"
-          size="sm"
-          className="p-2 h-8 w-8 text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all"
+        <Link 
+          href={restaurantUrl}
+          className="text-gray-600 hover:text-primary font-medium text-sm transition-colors"
         >
-          <Heart className="h-4 w-4" />
-        </Button>
+          Restaurant →
+        </Link>
       </CardFooter>
     </Card>
   );

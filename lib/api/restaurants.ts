@@ -1,5 +1,6 @@
 import { prisma } from '../prisma';
 import { Prisma } from '@prisma/client';
+import { sanitizeDishFields, isDishAllowed } from '../utils/dishFilters';
 
 export type RestaurantUI = {
   id: string;
@@ -60,7 +61,7 @@ export async function getRestaurantBySlug(slug: string, city: string): Promise<R
     },
     include: {
       menus: {
-        where: { status: 'APPROVED' },
+        where: { status: { in: ['APPROVED', 'PENDING'] } },
         include: {
           dishes: {
             select: {
@@ -79,16 +80,31 @@ export async function getRestaurantBySlug(slug: string, city: string): Promise<R
 
   if (!restaurant) return null;
 
-  const dishes = restaurant.menus.flatMap((menu) =>
-    menu.dishes.map((d) => ({
-      id: d.id,
-      name: d.name,
-      description: d.description,
-      price_cents: d.priceCents ?? null,
-      section: d.section,
-      tags: d.tags,
-    }))
-  );
+  const dishes = restaurant.menus
+    .flatMap((menu) =>
+      menu.dishes.map((d) => {
+        const s = sanitizeDishFields({
+          name: d.name,
+          description: d.description,
+          section: d.section,
+          tags: d.tags,
+        });
+        return {
+          id: d.id,
+          name: s.name,
+          description: s.description,
+          price_cents: d.priceCents ?? null,
+          section: d.section,
+          tags: d.tags,
+        };
+      })
+    )
+    .filter((d) => isDishAllowed({ name: d.name, description: d.description, section: d.section, tags: d.tags }))
+    .filter((d, idx, arr) => {
+      const key = `${d.name.toLowerCase()}|${d.section.toLowerCase()}|${d.price_cents ?? -1}`;
+      const firstIdx = arr.findIndex((x) => `${x.name.toLowerCase()}|${x.section.toLowerCase()}|${x.price_cents ?? -1}` === key);
+      return firstIdx === idx;
+    });
 
   const result: RestaurantWithDishes = {
     id: restaurant.id,
@@ -188,4 +204,21 @@ export async function updateRestaurant(id: string, updates: {
     website_url: updated.websiteUrl ?? null,
     verified: updated.verified,
   };
+}
+
+export async function getCitiesWithCount(): Promise<Array<{ name: string; restaurantCount: number }>> {
+  const cities = await prisma.restaurant.groupBy({
+    by: ['city'],
+    _count: {
+      city: true,
+    },
+    where: {
+      verified: true,
+    },
+  });
+
+  return cities.map((city) => ({
+    name: city.city,
+    restaurantCount: city._count.city,
+  }));
 }

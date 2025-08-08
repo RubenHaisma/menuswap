@@ -12,17 +12,17 @@ const config: Config = {
       colors: {
         // Opendoor-inspired color palette
         primary: {
-          DEFAULT: '#0066FF',
-          50: '#EBF4FF',
-          100: '#D6E8FF',
-          200: '#B3D4FF',
-          300: '#80BAFF',
-          400: '#4D9AFF',
-          500: '#0066FF',
-          600: '#0052CC',
-          700: '#003D99',
-          800: '#002966',
-          900: '#001433',
+          DEFAULT: '#4EB9C0',
+          50: '#EBF9FA',
+          100: '#D6F3F4',
+          200: '#B3E7EA',
+          300: '#80DADF',
+          400: '#4DB9C4',
+          500: '#4EB9C0',
+          600: '#3E949A',
+          700: '#2E6F73',
+          800: '#1F4A4D',
+          900: '#0F2526',
         },
         gray: {
           50: '#F8FAFC',

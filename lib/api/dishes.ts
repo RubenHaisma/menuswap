@@ -1,4 +1,5 @@
 import { prisma } from '../prisma';
+import { sanitizeDishFields, isDishAllowed } from '../utils/dishFilters';
 
 export type DishWithRestaurant = {
   id: string;
@@ -54,7 +55,32 @@ export async function searchDishes(params: {
     take: params.limit ?? undefined,
   });
 
-  return dishes.map((d) => ({
+  const cleaned = dishes
+    .map((d) => {
+      const s = sanitizeDishFields({
+        name: d.name,
+        description: d.description,
+        section: d.section,
+        tags: d.tags,
+      });
+      return { ...d, name: s.name, description: s.description };
+    })
+    .filter((d) =>
+      isDishAllowed(
+        { name: d.name, description: d.description, section: d.section, tags: d.tags },
+        params.query
+      )
+    );
+
+  const seen = new Set<string>();
+  const deduped = cleaned.filter((d) => {
+    const key = `${d.menu.restaurant.id}|${d.slug}|${d.priceCents ?? -1}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  return deduped.map((d) => ({
     id: d.id,
     menuId: d.menuId,
     name: d.name,
@@ -148,6 +174,54 @@ export async function getBestDishesUnderPrice(dishName: string, maxPrice: number
     orderBy: { priceCents: 'asc' },
     take: 20,
   });
+  return dishes.map((d) => ({
+    id: d.id,
+    menuId: d.menuId,
+    name: d.name,
+    slug: d.slug,
+    description: d.description,
+    price_cents: d.priceCents ?? null,
+    section: d.section,
+    tags: d.tags,
+    imageUrl: d.imageUrl ?? null,
+    createdAt: d.createdAt,
+    restaurant: {
+      id: d.menu.restaurant.id,
+      name: d.menu.restaurant.name,
+      slug: d.menu.restaurant.slug,
+      city: d.menu.restaurant.city,
+      address: d.menu.restaurant.address,
+    },
+  }));
+}
+
+export async function getSimilarDishes(slug: string, city: string, limit: number = 6): Promise<DishWithRestaurant[]> {
+  // Get the original dish first
+  const originalDish = await prisma.dish.findFirst({
+    where: {
+      slug,
+      menu: { status: 'APPROVED', restaurant: { city: { equals: city, mode: 'insensitive' } } },
+    },
+  });
+
+  if (!originalDish) return [];
+
+  // Find similar dishes by name similarity, section, or tags
+  const dishes = await prisma.dish.findMany({
+    where: {
+      NOT: { id: originalDish.id },
+      menu: { status: 'APPROVED' },
+      OR: [
+        { name: { contains: originalDish.name.split(' ')[0], mode: 'insensitive' } },
+        { section: originalDish.section },
+        { tags: { hasSome: originalDish.tags } },
+      ],
+    },
+    include: { menu: { include: { restaurant: true } } },
+    orderBy: { priceCents: 'asc' },
+    take: limit,
+  });
+
   return dishes.map((d) => ({
     id: d.id,
     menuId: d.menuId,

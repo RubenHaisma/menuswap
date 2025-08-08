@@ -5,8 +5,80 @@ import { Input } from '@/components/ui/input';
 import { Search, MapPin, Clock, Star, TrendingUp, Users, Award, ChefHat, Utensils, Heart } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { formatPrice } from '@/lib/utils/slugify';
+
+// Simple module-level cache to avoid repeated network calls in dev/StrictMode
+let statsCache: { restaurants: number; dishes: number; cities: number; avgPriceEuros: number } | null = null;
+let statsCachePromise: Promise<{ restaurants: number; dishes: number; cities: number; avgPriceEuros: number } | null> | null = null;
+
+function StatsSection() {
+  const [stats, setStats] = useState({ restaurants: 2500, dishes: 25000, cities: 100, avgPriceEuros: 15.5 });
+  const hasFetchedRef = useRef(false);
+
+  useEffect(() => {
+    if (hasFetchedRef.current) return; // avoid double-fetch in React 18 StrictMode (dev)
+    hasFetchedRef.current = true;
+
+    let isMounted = true;
+    const getStats = () => {
+      if (statsCache) return Promise.resolve(statsCache);
+      if (!statsCachePromise) {
+        statsCachePromise = fetch('/api/stats')
+          .then((res) => (res.ok ? res.json() : null))
+          .then((data) => {
+            statsCache = data ?? null;
+            return statsCache;
+          })
+          .catch((err) => {
+            console.error('Failed to fetch stats:', err);
+            return null;
+          });
+      }
+      return statsCachePromise;
+    };
+
+    getStats().then((data) => {
+      if (isMounted && data) setStats(data);
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const formatNumber = (num: number) => {
+    if (num >= 1000) {
+      return `${Math.floor(num / 1000)}k+`;
+    }
+    return num.toString();
+  };
+
+  return (
+    <section className="section-spacing bg-white">
+      <div className="container-content">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+          <div>
+            <div className="text-4xl font-bold text-primary mb-2">{formatNumber(stats.dishes)}</div>
+            <div className="text-gray-600">Gerechten</div>
+          </div>
+          <div>
+            <div className="text-4xl font-bold text-primary mb-2">{formatNumber(stats.restaurants)}</div>
+            <div className="text-gray-600">Restaurants</div>
+          </div>
+          <div>
+            <div className="text-4xl font-bold text-primary mb-2">{stats.cities}+</div>
+            <div className="text-gray-600">Steden</div>
+          </div>
+          <div>
+            <div className="text-4xl font-bold text-primary mb-2">€{stats.avgPriceEuros.toFixed(2)}</div>
+            <div className="text-gray-600">Gem. prijs</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export default function HomePage() {
   // Instant search state (client)
@@ -53,7 +125,7 @@ export default function HomePage() {
         const res = await fetch('/api/search/dishes', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query: term, sortBy: 'price_asc', limit: 6 }),
+          body: JSON.stringify({ query: term, sortBy: 'relevance', limit: 6 }),
         });
         const data = await res.json();
         setResults(data);
@@ -340,28 +412,7 @@ export default function HomePage() {
         </section>
 
         {/* Stats Section */}
-        <section className="section-spacing bg-white">
-          <div className="container-content">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-              <div>
-                <div className="text-4xl font-bold text-primary mb-2">25k+</div>
-                <div className="text-gray-600">Gerechten</div>
-              </div>
-              <div>
-                <div className="text-4xl font-bold text-primary mb-2">2.5k+</div>
-                <div className="text-gray-600">Restaurants</div>
-              </div>
-              <div>
-                <div className="text-4xl font-bold text-primary mb-2">100+</div>
-                <div className="text-gray-600">Steden</div>
-              </div>
-              <div>
-                <div className="text-4xl font-bold text-primary mb-2">50k+</div>
-                <div className="text-gray-600">Gebruikers</div>
-              </div>
-            </div>
-          </div>
-        </section>
+        <StatsSection />
 
         {/* CTA Banner */}
         {/* <section className="gradient-primary">

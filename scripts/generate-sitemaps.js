@@ -53,7 +53,7 @@ async function writeXml(filePath, xml) {
 }
 
 async function generateRestaurantsSitemaps(base) {
-  const total = await prisma.restaurant.count({ where: { verified: true } });
+  const total = await prisma.restaurant.count();
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const entries = [];
 
@@ -62,7 +62,6 @@ async function generateRestaurantsSitemaps(base) {
     const skip = (page - 1) * take;
 
     const rows = await prisma.restaurant.findMany({
-      where: { verified: true },
       orderBy: { updatedAt: 'desc' },
       select: { slug: true, city: true, updatedAt: true },
       take,
@@ -88,7 +87,6 @@ async function generateDishesSitemaps(base) {
   // Group by dish name and get latest createdAt for lastmod
   const groups = await prisma.dish.groupBy({
     by: ['name'],
-    where: { menu: { status: 'APPROVED' } },
     _count: { name: true },
     _max: { createdAt: true },
   });
@@ -119,7 +117,6 @@ async function generateDishesSitemaps(base) {
 async function generateCitiesSitemaps(base) {
   const groups = await prisma.restaurant.groupBy({
     by: ['city'],
-    where: { verified: true },
     _count: { city: true },
     _max: { updatedAt: true },
   });
@@ -150,7 +147,6 @@ async function generateBestListsSitemaps(base) {
   // Use top dish names by frequency; generate lists for common price caps
   const groups = await prisma.dish.groupBy({
     by: ['name'],
-    where: { menu: { status: 'APPROVED' } },
     _count: { name: true },
     _max: { createdAt: true },
   });

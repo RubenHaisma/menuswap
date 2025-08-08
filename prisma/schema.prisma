@@ -7,6 +7,94 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email       String       @unique
+  fullName    String?
+  role        String       @default("diner")
+  createdAt   DateTime     @default(now())
+  favorites   Favorite[]
+  menus       Menu[]
+  priceAlerts PriceAlert[]
+}
+
+model Restaurant {
+  id         String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name       String
+  slug       String     @unique
+  city       String
+  address    String?
+  websiteUrl String?
+  lat        Decimal?
+  lon        Decimal?
+  claimedBy  String?    @db.Uuid
+  verified   Boolean    @default(false)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  favorites  Favorite[]
+  menus      Menu[]
+}
+
+model Menu {
+  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  restaurantId String     @db.Uuid
+  uploadedBy   String?    @db.Uuid
+  sourceType   SourceType
+  sourceUrl    String?
+  rawText      String?
+  parsedJson   Json?
+  status       MenuStatus @default(PENDING)
+  checksum     String?
+  uploadedAt   DateTime   @default(now())
+  dishes       Dish[]
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  user         User?      @relation(fields: [uploadedBy], references: [id])
+
+  @@index([restaurantId])
+  @@index([status])
+}
+
+model Dish {
+  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  menuId      String     @db.Uuid
+  name        String
+  slug        String
+  description String?
+  priceCents  Int?
+  section     String     @default("Overig")
+  tags        String[]
+  imageUrl    String?
+  createdAt   DateTime   @default(now())
+  menu        Menu       @relation(fields: [menuId], references: [id])
+  favorites   Favorite[]
+
+  @@index([name])
+  @@index([priceCents])
+  @@index([section])
+}
+
+model Favorite {
+  id           String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId       String      @db.Uuid
+  restaurantId String?     @db.Uuid
+  dishId       String?     @db.Uuid
+  createdAt    DateTime    @default(now())
+  dish         Dish?       @relation(fields: [dishId], references: [id])
+  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id])
+  user         User        @relation(fields: [userId], references: [id])
+}
+
+model PriceAlert {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String   @db.Uuid
+  dishName      String
+  maxPriceCents Int
+  city          String?
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id])
+}
+
 enum MenuStatus {
   PENDING
   APPROVED
@@ -18,99 +106,3 @@ enum SourceType {
   IMAGE
   URL
 }
-
-model User {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email     String   @unique
-  fullName  String?
-  role      String   @default("diner")
-  createdAt DateTime @default(now())
-
-  menus      Menu[]
-  favorites  Favorite[]
-  priceAlerts PriceAlert[]
-}
-
-model Restaurant {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name       String
-  slug       String   @unique
-  city       String
-  address    String?
-  websiteUrl String?
-  lat        Decimal?
-  lon        Decimal?
-  claimedBy  String?  @db.Uuid
-  verified   Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  menus     Menu[]
-  favorites Favorite[]
-}
-
-model Menu {
-  id           String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  restaurantId String      @db.Uuid
-  uploadedBy   String?     @db.Uuid
-  sourceType   SourceType
-  sourceUrl    String?
-  rawText      String?
-  parsedJson   Json?
-  status       MenuStatus  @default(PENDING)
-  checksum     String?
-  uploadedAt   DateTime    @default(now())
-
-  restaurant Restaurant @relation(fields: [restaurantId], references: [id])
-  dishes     Dish[]
-  user       User?      @relation(fields: [uploadedBy], references: [id])
-
-  @@index([restaurantId])
-  @@index([status])
-}
-
-model Dish {
-  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  menuId      String    @db.Uuid
-  name        String
-  slug        String
-  description String?
-  priceCents  Int?
-  section     String    @default("Overig")
-  tags        String[]
-  imageUrl    String?
-  createdAt   DateTime  @default(now())
-
-  menu      Menu       @relation(fields: [menuId], references: [id])
-  favorites Favorite[]
-
-  @@index([name])
-  @@index([priceCents])
-  @@index([section])
-}
-
-model Favorite {
-  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId       String   @db.Uuid
-  restaurantId String?  @db.Uuid
-  dishId       String?  @db.Uuid
-  createdAt    DateTime @default(now())
-
-  user       User       @relation(fields: [userId], references: [id])
-  restaurant Restaurant? @relation(fields: [restaurantId], references: [id])
-  dish       Dish?      @relation(fields: [dishId], references: [id])
-}
-
-model PriceAlert {
-  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId        String   @db.Uuid
-  dishName      String
-  maxPriceCents Int
-  city          String?
-  active        Boolean  @default(true)
-  createdAt     DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id])
-}
-
-
